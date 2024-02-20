@@ -6,6 +6,7 @@ using AElf.Indexing.Elasticsearch;
 using Nest;
 using TomorrowDAOServer.DAO.Dtos;
 using TomorrowDAOServer.Common.Provider;
+using TomorrowDAOServer.Governance;
 using Volo.Abp;
 using Volo.Abp.Application.Dtos;
 using Volo.Abp.Application.Services;

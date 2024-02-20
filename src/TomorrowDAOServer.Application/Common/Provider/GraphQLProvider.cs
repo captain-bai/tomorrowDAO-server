@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GraphQL;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using TomorrowDAOServer.Common.GraphQL;
 using TomorrowDAOServer.Enums;
+using TomorrowDAOServer.Governance;
 using TomorrowDAOServer.Grains.Grain.ApplicationHandler;
 using Volo.Abp.DependencyInjection;
 
@@ -18,6 +20,7 @@ public interface IGraphQLProvider
     public Task SetLastEndHeightAsync(string chainId, WorkerBusinessType queryChainType, long height);
     public Task<long> GetIndexBlockHeightAsync(string chainId);
     public Task<long> GetHoldersAsync(string symbol, string chainId, int skipCount, int maxResultCount);
+    public Task<List<GovernanceModeDto>> GetGovernanceModesAsync(string chainId);
 }
 
 public class GraphQLProvider : IGraphQLProvider, ISingletonDependency
@@ -108,6 +111,26 @@ public class GraphQLProvider : IGraphQLProvider, ISingletonDependency
         }
         return 0;
     }
+
+    public async Task<List<GovernanceModeDto>> GetGovernanceModesAsync(string chainId)
+    {
+        var graphQlResponse = await _graphQLClient.SendQueryAsync<ConfirmedBlockHeightRecord>(new GraphQLRequest
+        {
+            Query =
+                @"query($chainId:String,$filterType:BlockFilterType!) {
+                    syncState(input: {chainId:$chainId,filterType:$filterType}){
+                        confirmedBlockHeight}
+                    }",
+            Variables = new
+            {
+                chainId,
+                filterType = BlockFilterType.LOG_EVENT
+            }
+        });
+
+        return graphQlResponse.Data;
+    }
+
 
     public async Task<long> GetProjectIdAsync(string chainId, string projectId)
     {
